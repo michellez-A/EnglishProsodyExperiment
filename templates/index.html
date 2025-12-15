@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>英语语调录音练习</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>英语语调录音实验（重庆方言 × 英语超音段迁移）</title>
   <style>
+    /* 基本样式（保持和原版相似） */
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: #f7f7f7;
@@ -13,28 +14,16 @@
       padding: 24px;
     }
     .container {
-      max-width: 900px;
+      max-width: 980px;
       margin: 0 auto;
     }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 16px;
-    }
-    h2 {
-      font-size: 20px;
-      margin-top: 32px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 6px;
-    }
-    h3 {
-      font-size: 16px;
-      margin-top: 20px;
-      color: #444;
-    }
+    h1 { font-size: 24px; margin-bottom: 16px; }
+    h2 { font-size: 20px; margin-top: 32px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
+    h3 { font-size: 16px; margin-top: 20px; color: #444; }
     .sentence {
       background: #fff;
       border-radius: 8px;
-      padding: 16px;
+      padding: 12px;
       margin: 12px 0;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
       display: flex;
@@ -42,10 +31,12 @@
       align-items: center;
       gap: 12px;
     }
-    .text {
-      font-size: 16px;
-      line-height: 1.4;
+    .sentence .left {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
     }
+    .text { font-size: 16px; line-height: 1.4; }
     button {
       border: none;
       border-radius: 20px;
@@ -55,23 +46,31 @@
       background: #2563eb;
       color: #fff;
     }
-    button.recording {
-      background: #dc2626;
+    button.recording { background: #dc2626; }
+    .controls { display:flex; align-items:center; gap:10px; }
+    audio { margin-left: 12px; max-width:360px; }
+    .note { font-size: 13px; color: #666; margin-top: 4px; }
+    .small-badge {
+      display:inline-block;
+      padding:3px 8px;
+      font-size:12px;
+      color:#065f46;
+      background:#ecfdf5;
+      border-radius:999px;
+      border:1px solid #bbf7d0;
     }
-    audio {
-      margin-left: 12px;
+    .filename { font-size:12px; color:#444; margin-top:4px; word-break:break-all; }
+    .top-info { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    input[type="text"], input[type="datetime-local"] {
+      padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;
     }
-    .note {
-      font-size: 13px;
-      color: #666;
-      margin-top: 4px;
-    }
+    .actions { display:flex; gap:12px; align-items:center; margin-top:12px; }
   </style>
 </head>
 <body>
   <!-- 知情同意弹窗 -->
   <div id="consentModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;">
-    <div style="background:#fff;max-width:640px;padding:24px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+    <div style="background:#fff;max-width:760px;padding:24px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
       <h2 style="margin-top:0;">被试知情同意说明</h2>
       <p style="font-size:14px;line-height:1.6;color:#333;">
         您将参与一项关于<strong>重庆方言背景学习者英语语音（超音段特征）</strong>的学术研究。本实验仅采集您的英语朗读语音数据，用于分析语调、重音与节奏特征。
@@ -91,229 +90,470 @@
       </div>
     </div>
   </div>
+
   <div class="container">
     <h1>英语语调录音实验（重庆方言 × 英语超音段迁移）</h1>
 
     <div class="sentence" style="flex-direction:column;align-items:flex-start;">
       <div class="text"><strong>被试信息</strong></div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
-        <label>姓名：<input id="participantName" type="text" style="padding:4px 8px;"></label>
-        <label>被试编号：<input id="participantID" type="text" style="padding:4px 8px;"></label>
-        <label>测试时间：<input id="testTime" type="datetime-local" style="padding:4px 8px;"></label>
+      <div class="top-info" style="margin-top:8px;">
+        <label>姓名：<input id="participantName" type="text" placeholder="例如：张三"></label>
+        <label>被试编号：<input id="participantID" type="text" placeholder="例如：001"></label>
+        <label>测试时间：<input id="testTime" type="datetime-local"></label>
+        <div style="margin-left:8px;font-size:12px;color:#666;">（请在开始录音前填写完整）</div>
       </div>
-      <div class="note">请在开始录音前填写完整，用于实验标注与后续语音分析。</div>
+      <div class="note">请在开始录音前填写完整，用于实验标注与后续语音分析。导出与提交文件名将基于“姓名 + 编号”。</div>
     </div>
 
     <h2>① 陈述句（Declaratives）</h2>
-
     <h3>宽焦点（Broad focus）</h3>
-    <div class="sentence" data-code="D-BF-01"><div class="text"><small>[D-BF-01]</small> She bought a new coat yesterday.</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="D-BF-02"><div class="text"><small>[D-BF-02]</small> The children are playing in the garden.</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="D-BF-03"><div class="text"><small>[D-BF-03]</small> He finished the report before lunch.</div><button onclick="toggleRecord(this)">录音</button></div>
+
+    <!-- 每个 sentence 保持 data-code 属性 -->
+    <div class="sentence" data-code="D-BF-01">
+      <div class="left">
+        <div class="text"><small>[D-BF-01]</small> She bought a new coat yesterday.</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls">
+        <button onclick="toggleRecord(this)">录音</button>
+      </div>
+    </div>
+
+    <div class="sentence" data-code="D-BF-02">
+      <div class="left">
+        <div class="text"><small>[D-BF-02]</small> The children are playing in the garden.</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls">
+        <button onclick="toggleRecord(this)">录音</button>
+      </div>
+    </div>
+
+    <div class="sentence" data-code="D-BF-03">
+      <div class="left">
+        <div class="text"><small>[D-BF-03]</small> He finished the report before lunch.</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls">
+        <button onclick="toggleRecord(this)">录音</button>
+      </div>
+    </div>
+
     <div class="note">功能：基线语调、句末降调、整体 F0 轮廓</div>
 
     <h3>宾语焦点（Object focus）</h3>
-    <div class="sentence" data-code="D-OF-01"><div class="text"><small>[D-OF-01]</small> She bought a <strong>NEW COAT</strong> yesterday.</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="D-OF-02"><div class="text"><small>[D-OF-02]</small> He finished the <strong>REPORT</strong> before lunch.</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="D-OF-03"><div class="text"><small>[D-OF-03]</small> The children are playing in the <strong>GARDEN</strong>.</div><button onclick="toggleRecord(this)">录音</button></div>
+
+    <div class="sentence" data-code="D-OF-01">
+      <div class="left">
+        <div class="text"><small>[D-OF-01]</small> She bought a <strong>NEW COAT</strong> yesterday.</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="D-OF-02">
+      <div class="left">
+        <div class="text"><small>[D-OF-02]</small> He finished the <strong>REPORT</strong> before lunch.</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="D-OF-03">
+      <div class="left">
+        <div class="text"><small>[D-OF-03]</small> The children are playing in the <strong>GARDEN</strong>.</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
     <div class="note">功能：核重音位置 + 焦点后去重音</div>
 
     <h2>② 是 / 否疑问句（Yes–No Questions）</h2>
-    <div class="sentence" data-code="YN-01"><div class="text"><small>[YN-01]</small> Did she buy a new coat yesterday?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="YN-02"><div class="text"><small>[YN-02]</small> Are the children playing in the garden?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="YN-03"><div class="text"><small>[YN-03]</small> Did he finish the report before lunch?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="YN-04"><div class="text"><small>[YN-04]</small> Are they moving to the city this year?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="YN-05"><div class="text"><small>[YN-05]</small> Did you meet her after the meeting?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="YN-06"><div class="text"><small>[YN-06]</small> Is he working late tonight?</div><button onclick="toggleRecord(this)">录音</button></div>
+
+    <div class="sentence" data-code="YN-01">
+      <div class="left">
+        <div class="text"><small>[YN-01]</small> Did she buy a new coat yesterday?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="YN-02">
+      <div class="left">
+        <div class="text"><small>[YN-02]</small> Are the children playing in the garden?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="YN-03">
+      <div class="left">
+        <div class="text"><small>[YN-03]</small> Did he finish the report before lunch?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="YN-04">
+      <div class="left">
+        <div class="text"><small>[YN-04]</small> Are they moving to the city this year?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="YN-05">
+      <div class="left">
+        <div class="text"><small>[YN-05]</small> Did you meet her after the meeting?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="YN-06">
+      <div class="left">
+        <div class="text"><small>[YN-06]</small> Is he working late tonight?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
     <div class="note">功能：RP vs GA 的关键区分（句尾升调幅度与形态）</div>
 
-    <h2>③ WH‑疑问句</h2>
-    <div class="sentence" data-code="WH-01"><div class="text"><small>[WH-01]</small> Who bought a new coat yesterday?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="WH-02"><div class="text"><small>[WH-02]</small> Where are the children playing now?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="WH-03"><div class="text"><small>[WH-03]</small> When did he finish the report?</div><button onclick="toggleRecord(this)">录音</button></div>
-    <div class="sentence" data-code="WH-04"><div class="text"><small>[WH-04]</small> Why did they move to the city?</div><button onclick="toggleRecord(this)">录音</button></div>
+    <h2>③ WH-疑问句</h2>
+
+    <div class="sentence" data-code="WH-01">
+      <div class="left">
+        <div class="text"><small>[WH-01]</small> Who bought a new coat yesterday?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="WH-02">
+      <div class="left">
+        <div class="text"><small>[WH-02]</small> Where are the children playing now?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="WH-03">
+      <div class="left">
+        <div class="text"><small>[WH-03]</small> When did he finish the report?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
+    <div class="sentence" data-code="WH-04">
+      <div class="left">
+        <div class="text"><small>[WH-04]</small> Why did they move to the city?</div>
+        <div class="filename" aria-hidden="true"></div>
+      </div>
+      <div class="controls"><button onclick="toggleRecord(this)">录音</button></div>
+    </div>
+
     <div class="note">功能：检验过度升调与句末调型迁移</div>
 
     <div class="sentence" style="justify-content:flex-start;gap:16px;">
-      <button onclick="exportAll()">一键导出全部录音</button>
-      <button onclick="submitToServer()">提交实验</button>
-      <span class="note">导出用于本地备份；提交用于上传至研究服务器</span>
+      <div class="actions">
+        <button onclick="exportAll()">一键导出全部录音（ZIP）</button>
+        <button onclick="submitToServer()">提交实验（上传 ZIP）</button>
+        <button onclick="downloadList()">导出文件名清单（TXT）</button>
+      </div>
+      <span class="note">导出用于本地备份；提交用于上传至研究服务器。注意：ZIP 文件按“姓名_编号.zip”命名；每个录音按“姓名_编号_题号.webm”命名，仅保留每题最后一次录音。</span>
     </div>
   </div>
 
+  <!-- 引入 JSZip（CDN） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script>
-  // 伦理同意状态
-  let consentGiven = false;
-  let consentTimestamp = null;
 
+  <script>
+    // 状态变量
+    let consentGiven = false;
+    let consentTimestamp = null;
 
-  async function submitToServer() {
-    if (!consentGiven) {
-      alert('请先阅读并同意知情同意说明');
-      return;
+    // 只保留每条句子的最后一次录音：以 code 为键
+    const recordingsMap = {}; // { code: { blob, filename, url } }
+
+    // 全局 MediaRecorder：只允许一个同时录音流
+    let mediaRecorder = null;
+    let currentChunks = [];
+    let currentRecordingCode = null; // 正在录制的句子 code
+    let currentButton = null; // 正在录制时对应的按钮（便于切换样式）
+
+    // ----------------- 帮助函数 -----------------
+    function acceptConsent() {
+      consentGiven = true;
+      consentTimestamp = new Date().toISOString();
+      document.getElementById('consentModal').style.display = 'none';
     }
 
-    if (recordings.length === 0) {
-      alert('尚未录制任何音频');
-      return;
+    function declineConsent() {
+      alert('您未同意参与实验，页面将无法继续使用。');
+      // 禁用页面交互（简单处理）
+      document.body.innerHTML = '<div style="padding:40px;font-size:18px;">您未同意知情同意说明，无法继续实验。</div>';
     }
 
-    const pid = document.getElementById('participantID').value;
-    const name = document.getElementById('participantName').value;
-    const time = document.getElementById('testTime').value;
+    function q(selector, ctx=document) { return ctx.querySelector(selector); }
+    function qa(selector, ctx=document) { return Array.from(ctx.querySelectorAll(selector)); }
 
-    if (!pid || !name || !time) {
-      alert('请填写完整被试信息');
-      return;
+    // 对用于文件名的字符串做安全化处理（移除换行、斜杠等）
+    function sanitizeForFilename(s) {
+      if (!s) return 'UNKNOWN';
+      return String(s).trim().replace(/\s+/g, '_').replace(/[\\\/:*?"<>|]/g, '').replace(/,+$/,'') || 'UNKNOWN';
     }
 
-    const zip = new JSZip();
-    recordings.forEach(r => zip.file(r.filename, r.blob));
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-
-    const formData = new FormData();
-    formData.append('participant_id', pid);
-    formData.append('participant_name', name);
-    formData.append('test_time', time);
-    formData.append('consent', 'true');
-    formData.append('consent_timestamp', consentTimestamp);
-    formData.append('zipfile', zipBlob, `${pid}.zip`);
-
-    try {
-      const response = await fetch('/submit', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        alert('实验数据已成功提交，感谢参与！');
-      } else {
-        alert('提交失败，请联系研究者');
+    // 从句子 DOM 中显示 filename / 播放控件（每次只保留最后一次）
+    function showRecordingInSentence(sentenceDiv, code) {
+      const infoDiv = sentenceDiv.querySelector('.filename');
+      // 清理之前的 audio 元素（如果有）
+      const prevAudio = sentenceDiv.querySelector('audio');
+      if (prevAudio) {
+        prevAudio.pause();
+        if (prevAudio.src) URL.revokeObjectURL(prevAudio.src);
+        prevAudio.remove();
       }
-    } catch (e) {
-      alert('无法连接服务器，请检查网络或稍后重试');
-    }
-  }
-</script>
-<script>
-  let mediaRecorder;
-  let chunks = [];
-  const recordings = [];
 
-  async function toggleRecord(button) {
-    const sentenceDiv = button.closest('.sentence');
-    const code = sentenceDiv.dataset.code;
-    const pid = document.getElementById('participantID').value || 'UNKNOWN';
+      const rec = recordingsMap[code];
+      if (!rec) {
+        infoDiv.textContent = '';
+        return;
+      }
 
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-      button.classList.remove('recording');
-      button.textContent = '录音';
-      return;
-    }
-
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    chunks = [];
-
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'audio/webm' });
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const filename = `${pid}_${code}_${timestamp}.webm`;
-      recordings.push({ filename, blob });
-
+      // 创建 audio 控件并显示文件名
       const audio = document.createElement('audio');
       audio.controls = true;
-      audio.src = URL.createObjectURL(blob);
+      audio.src = rec.url;
+      audio.setAttribute('preload','none');
       sentenceDiv.appendChild(audio);
-    };
 
-    mediaRecorder.start();
-    button.classList.add('recording');
-    button.textContent = '停止';
-  }
-
-  function exportAll() {
-    if (recordings.length === 0) {
-      alert('尚未录制任何音频');
-      return;
+      infoDiv.textContent = rec.filename ? ('已录制：' + rec.filename) : '已录制';
     }
-    const zip = new JSZip();
-    recordings.forEach(r => zip.file(r.filename, r.blob));
-    zip.generateAsync({ type: 'blob' }).then(content => {
+
+    // 当开始对一条句子录音/停止录音的按钮被点击
+    async function toggleRecord(button) {
+      // 如果当前有一个正在录制的句子（可能不是这个 button 所在的句子）
+      // 并且用户点击的是另一个 sentence 的录音，则先停止正在进行的录音
+      const sentenceDiv = button.closest('.sentence');
+      const code = sentenceDiv?.dataset?.code;
+      if (!code) { alert('该句无效：缺少 data-code'); return; }
+
+      // If currently recording and clicking same button => stop
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        // If same sentence triggered stop, simply stop. If different, stop existing first, then start new.
+        if (currentButton && currentButton !== button) {
+          // stop the currently recording one first; onstop handler will create file
+          mediaRecorder.stop();
+          // continue to start new after short delay to ensure stream remains available (we'll wait for onstop to fire then start new)
+          // But we want quick UX: we will wait until mediaRecorder becomes inactive, then start new.
+          // Use 'onstop' event to chain start; implement a one-time flag to start new after stop.
+          const nextStart = () => startRecordingForSentence(button, code);
+          // Attach temporary onstop for chaining (only if mediaRecorder currently exists)
+          // mediaRecorder.onstop will be invoked; but we've already set a permanent onstop handler that finalizes blob.
+          // We schedule a short timeout to ensure stop done.
+          setTimeout(nextStart, 300);
+          return;
+        } else {
+          // same button -> stop the current recorder
+          mediaRecorder.stop();
+          // button style will be updated in onstop
+          return;
+        }
+      } else {
+        // no recording in progress -> start for this sentence
+        startRecordingForSentence(button, code);
+      }
+    }
+
+    async function startRecordingForSentence(button, code) {
+      // request media if not already acquired. To avoid repeated permission prompts,
+      // obtain a new stream each time (the browser will reuse mic permission).
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+      } catch (err) {
+        console.error('获取麦克风失败：', err);
+        alert('无法访问麦克风，请检查浏览器权限或设备。');
+        return;
+      }
+
+      currentChunks = [];
+      currentRecordingCode = code;
+      currentButton = button;
+      button.classList.add('recording');
+      button.textContent = '停止';
+
+      mediaRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) currentChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        // assemble blob
+        const blob = new Blob(currentChunks, { type: 'audio/webm' });
+        const nameRaw = sanitizeForFilename(document.getElementById('participantName').value);
+        const pidRaw = sanitizeForFilename(document.getElementById('participantID').value);
+        const nameForFile = (nameRaw || 'UNKNOWN');
+        const pidForFile = (pidRaw || 'UNKNOWN');
+
+        // filename per requirement: 姓名_编号_题号.webm
+        const filename = `${nameForFile}_${pidForFile}_${currentRecordingCode}.webm`;
+
+        // If there exists a previous recording for this code, revoke its URL
+        if (recordingsMap[currentRecordingCode] && recordingsMap[currentRecordingCode].url) {
+          try { URL.revokeObjectURL(recordingsMap[currentRecordingCode].url); } catch(e){/*ignore*/ }
+        }
+
+        const url = URL.createObjectURL(blob);
+        recordingsMap[currentRecordingCode] = { blob, filename, url };
+
+        // Update UI: show audio control and filename text in the sentence div
+        const sentenceDiv = currentButton.closest('.sentence');
+        // Ensure any previous audio elements are removed and replaced
+        showRecordingInSentence(sentenceDiv, currentRecordingCode);
+
+        // cleanup: stop tracks from stream to release microphone
+        try {
+          const tracks = mediaRecorder.stream.getTracks();
+          tracks.forEach(t => t.stop());
+        } catch(e) {}
+
+        // reset button state
+        if (currentButton) {
+          currentButton.classList.remove('recording');
+          currentButton.textContent = '录音';
+        }
+
+        // reset globals
+        mediaRecorder = null;
+        currentChunks = [];
+        currentRecordingCode = null;
+        currentButton = null;
+      };
+
+      mediaRecorder.start();
+    }
+
+    // 导出所有（只包含每题最后一次录音）
+    async function exportAll() {
+      const keys = Object.keys(recordingsMap);
+      if (keys.length === 0) {
+        alert('尚未录制任何音频');
+        return;
+      }
+
+      const zip = new JSZip();
+      // zip 文件名用姓名_编号.zip
+      const nameRaw = sanitizeForFilename(document.getElementById('participantName').value);
+      const pidRaw = sanitizeForFilename(document.getElementById('participantID').value);
+      const zipName = `${nameRaw || 'UNKNOWN'}_${pidRaw || 'UNKNOWN'}.zip`;
+
+      keys.forEach(code => {
+        const rec = recordingsMap[code];
+        if (rec && rec.blob) {
+          zip.file(rec.filename, rec.blob);
+        }
+      });
+
+      const content = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(content);
-      a.download = 'recordings.zip';
+      a.download = zipName;
       a.click();
-    });
-  }
-  function acceptConsent() {
-    consentGiven = true;
-    consentTimestamp = new Date().toISOString();
-    document.getElementById('consentModal').style.display = 'none';
-  }
-
-  function declineConsent() {
-    alert('您未同意参与实验，页面将无法继续使用。');
-  }
-</script>
-</body>
-</html>
-
----
-
-## Flask 后端（/submit + metadata.json 自动生成）
-
-```python
-from flask import Flask, request, jsonify
-from datetime import datetime
-import os, json, zipfile
-
-app = Flask(__name__)
-
-BASE_DIR = "data"
-os.makedirs(BASE_DIR, exist_ok=True)
-
-@app.route('/submit', methods=['POST'])
-def submit():
-    pid = request.form.get('participant_id')
-    name = request.form.get('participant_name')
-    test_time = request.form.get('test_time')
-    consent = request.form.get('consent')
-    consent_ts = request.form.get('consent_timestamp')
-    zip_file = request.files.get('zipfile')
-
-    if not all([pid, name, test_time, consent, consent_ts, zip_file]):
-        return jsonify({'error': 'Missing fields'}), 400
-
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    subject_dir = os.path.join(BASE_DIR, f"{pid}_{timestamp}")
-    os.makedirs(subject_dir, exist_ok=True)
-
-    zip_path = os.path.join(subject_dir, 'recordings.zip')
-    zip_file.save(zip_path)
-
-    with zipfile.ZipFile(zip_path, 'r') as z:
-        z.extractall(os.path.join(subject_dir, 'recordings'))
-
-    metadata = {
-        'participant_id': pid,
-        'participant_name': name,
-        'test_time': test_time,
-        'consent': consent == 'true',
-        'consent_timestamp': consent_ts,
-        'submission_time': datetime.now().isoformat(),
-        'n_recordings': len(os.listdir(os.path.join(subject_dir, 'recordings')))
+      // free object URL later
+      setTimeout(() => { URL.revokeObjectURL(a.href); }, 5000);
     }
 
-    with open(os.path.join(subject_dir, 'metadata.json'), 'w', encoding='utf-8') as f:
-        json.dump(metadata, f, ensure_ascii=False, indent=2)
+    // 下载文件名清单（TXT），便于记录
+    function downloadList() {
+      const keys = Object.keys(recordingsMap);
+      if (keys.length === 0) { alert('尚未录制任何音频'); return; }
+      const lines = keys.map(k => recordingsMap[k].filename);
+      const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const nameRaw = sanitizeForFilename(document.getElementById('participantName').value);
+      const pidRaw = sanitizeForFilename(document.getElementById('participantID').value);
+      a.download = `${nameRaw || 'UNKNOWN'}_${pidRaw || 'UNKNOWN'}_filelist.txt`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
 
-    return jsonify({'status': 'ok'})
+    // 提交到服务器（将 ZIP 作为表单字段上传）
+    async function submitToServer() {
+      if (!consentGiven) {
+        alert('请先阅读并同意知情同意说明');
+        return;
+      }
+      const keys = Object.keys(recordingsMap);
+      if (keys.length === 0) {
+        alert('尚未录制任何音频');
+        return;
+      }
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-```
+      const pid = document.getElementById('participantID').value;
+      const name = document.getElementById('participantName').value;
+      const time = document.getElementById('testTime').value;
 
+      if (!pid || !name || !time) {
+        alert('请填写完整被试信息（姓名、编号、测试时间）');
+        return;
+      }
+
+      // 组装 ZIP
+      const zip = new JSZip();
+      keys.forEach(code => {
+        const rec = recordingsMap[code];
+        if (rec && rec.blob) {
+          zip.file(rec.filename, rec.blob);
+        }
+      });
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      // 构造 FormData
+      const formData = new FormData();
+      formData.append('participant_id', pid);
+      formData.append('participant_name', name);
+      formData.append('test_time', time);
+      formData.append('consent', 'true');
+      formData.append('consent_timestamp', consentTimestamp || new Date().toISOString());
+      const zipFilename = `${sanitizeForFilename(name)}_${sanitizeForFilename(pid)}.zip`;
+      formData.append('zipfile', zipBlob, zipFilename);
+
+      // 请求发送（后端需实现 /submit 接口）
+      try {
+        const response = await fetch('/submit', { method: 'POST', body: formData });
+        if (response.ok) {
+          alert('实验数据已成功提交，感谢参与！');
+        } else {
+          // 尝试读取后端返回的错误信息
+          let msg = '提交失败，请联系研究者';
+          try {
+            const txt = await response.text();
+            if (txt) msg += '（服务器回应：' + txt + '）';
+          } catch(e) {}
+          alert(msg);
+        }
+      } catch (e) {
+        console.error(e);
+        alert('无法连接服务器，请检查网络或稍后重试');
+      }
+    }
+
+    // 在页面加载时，初始化任何已有录音显示（若有）
+    window.addEventListener('load', () => {
+      // 保持空实现；未来可从本地加载草稿
+    });
+
+    // 在用户关闭或刷新页面前，提示（防止误关闭导致录音丢失）
+    window.addEventListener('beforeunload', (e) => {
+      if (Object.keys(recordingsMap).length > 0 || (mediaRecorder && mediaRecorder.state === 'recording')) {
+        const confirmationMessage = '检测到已录制数据或正在录音，确认要离开页面吗？';
+        e.returnValue = confirmationMessage;
+        return confirmationMessage;
+      }
+    });
+  </script>
+</body>
+</html>

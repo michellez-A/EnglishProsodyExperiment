@@ -3,16 +3,13 @@ from datetime import datetime
 import os, json, zipfile
 
 app = Flask(__name__)
-
 BASE_DIR = "data"
 os.makedirs(BASE_DIR, exist_ok=True)
 
-# 主页路由，使用 render_template 渲染 templates/index.html
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# 提交录音接口
 @app.route('/submit', methods=['POST'])
 def submit():
     pid = request.form.get('participant_id')
